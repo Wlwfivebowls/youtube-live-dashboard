@@ -77,7 +77,7 @@ styled_df = pd.concat([mean_df, summary], ignore_index=True)
 
 # 用 data_editor 呈現，針對均值列變色
 def highlight_mean_rows(row):
-    return ['background-color: lightyellow; font-weight: bold' if '均值' in str(row['頻道名稱']) else '' for _ in row]
+    return ['background-color: gold; color: black; font-weight: bold' if '均值' in str(row['頻道名稱']) else '' for _ in row]
 
 styled_output = styled_df.style.apply(highlight_mean_rows, axis=1)
 st.dataframe(styled_output, use_container_width=True)
