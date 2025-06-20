@@ -64,7 +64,7 @@ summary = filtered.groupby(["頻道名稱", "日期"]).apply(calculate_daily_sta
 
 st.subheader("📈 每日在線人數統計表")
 
-# 製作每個頻道的均值列，並放在表格最上面
+# 製作每個頻道的均值列，並依每日平均排序
 mean_rows = []
 for channel in summary["頻道名稱"].unique():
     sub = summary[summary["頻道名稱"] == channel]
@@ -72,7 +72,7 @@ for channel in summary["頻道名稱"].unique():
     row = pd.DataFrame([[f"{channel}（均值）", ""] + list(mean_data.values)], columns=summary.columns)
     mean_rows.append(row)
 
-mean_df = pd.concat(mean_rows, ignore_index=True)
+mean_df = pd.concat(mean_rows, ignore_index=True).sort_values(by='每日平均在線人數', ascending=False)
 styled_df = pd.concat([mean_df, summary], ignore_index=True)
 
 # 用 data_editor 呈現，針對均值列變色
