@@ -50,11 +50,11 @@ else:
     st.altair_chart(chart, use_container_width=True)
 
 # 計算每日統計
-def calculate_daily_stats(group):
+def calculate_daily_stats(group):\n    total = group['在線人數'].sum()
     full_day = group["在線人數"].mean()
     avg_11_14 = group[group["小時"].between(11, 13)]["在線人數"].mean()
     avg_19_22 = group[group["小時"].between(19, 21)]["在線人數"].mean()
-    return pd.Series({
+        return pd.Series({\n        '每日加總人數': int(total),
         "每日平均在線人數": round(full_day, 2),
         "11:00–14:00 平均": round(avg_11_14, 2),
         "19:00–22:00 平均": round(avg_19_22, 2),
