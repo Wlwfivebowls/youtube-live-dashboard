@@ -16,7 +16,6 @@ df = load_data()
 
 st.title("📺 YouTube 頻道在線人數互動儀表板")
 
-# 左側選單
 mode = st.sidebar.radio("選擇模式", ["單一頻道分析", "各頻道比較"])
 
 channels = sorted(df["頻道名稱"].unique())
@@ -50,7 +49,7 @@ else:
     ).interactive().properties(height=400)
     st.altair_chart(chart, use_container_width=True)
 
-# 計算每日統計 + 區段平均
+# 計算每日統計
 def calculate_daily_stats(group):
     full_day = group["在線人數"].mean()
     avg_11_14 = group[group["小時"].between(11, 13)]["在線人數"].mean()
@@ -64,14 +63,25 @@ def calculate_daily_stats(group):
 summary = filtered.groupby(["頻道名稱", "日期"]).apply(calculate_daily_stats).reset_index()
 
 st.subheader("📈 每日在線人數統計表")
-# 加入均值列
-if not summary.empty:
-    mean_row = summary.drop(columns=["日期", "頻道名稱"]).mean(numeric_only=True)
-    mean_df = pd.DataFrame([["全部頻道均值", ""] + list(mean_row.values)], columns=summary.columns)
-    summary = pd.concat([summary, mean_df], ignore_index=True)
 
-st.dataframe(summary, use_container_width=True)
+# 製作每個頻道的均值列，並放在表格最上面
+mean_rows = []
+for channel in summary["頻道名稱"].unique():
+    sub = summary[summary["頻道名稱"] == channel]
+    mean_data = sub.drop(columns=["日期", "頻道名稱"]).mean(numeric_only=True)
+    row = pd.DataFrame([[f"{channel}（均值）", ""] + list(mean_data.values)], columns=summary.columns)
+    mean_rows.append(row)
+
+mean_df = pd.concat(mean_rows, ignore_index=True)
+styled_df = pd.concat([mean_df, summary], ignore_index=True)
+
+# 用 data_editor 呈現，針對均值列變色
+def highlight_mean_rows(row):
+    return ['background-color: lightyellow; font-weight: bold' if '均值' in str(row['頻道名稱']) else '' for _ in row]
+
+styled_output = styled_df.style.apply(highlight_mean_rows, axis=1)
+st.dataframe(styled_output, use_container_width=True)
 
 # 匯出功能
-csv = summary.to_csv(index=False).encode("utf-8-sig")
+csv = styled_df.to_csv(index=False).encode("utf-8-sig")
 st.download_button("📥 下載統計表（Excel）", data=csv, file_name="每日在線統計表.csv", mime="text/csv")
